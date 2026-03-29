@@ -18,6 +18,9 @@ const app = express();
 
 // ── Serve frontend files (index.html, login.html, etc.)
 app.use(express.static(path.join(__dirname, '..')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'login.html'));
+});
 
 // ── Body parser
 app.use(express.json());
