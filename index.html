@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COD1's Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050508;
+    --bg2: #0a0a10;
+    --bg3: #0f0f18;
+    --surface: #12121e;
+    --surface2: #1a1a2a;
+    --border: rgba(120,80,255,0.18);
+    --border2: rgba(120,80,255,0.35);
+    --accent: #7c3aff;
+    --accent2: #a855f7;
+    --neon: #b57bff;
+    --neon2: #00f0ff;
+    --text: #e8e0ff;
+    --text2: #9988cc;
+    --text3: #5544aa;
+    --danger: #ff4466;
+    --success: #00e5a0;
+    --warn: #f59e0b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ====== CUSTOM CURSOR ====== */
+  #cursor-dot {
+    width: 8px; height: 8px;
+    background: var(--neon);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.15s, height 0.15s, background 0.15s;
+    mix-blend-mode: screen;
+  }
+  #cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--accent2);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s, border-color 0.3s;
+    mix-blend-mode: screen;
+  }
+  #cursor-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99997;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  body:has(a:hover) #cursor-dot,
+  body:has(button:hover) #cursor-dot { width: 14px; height: 14px; background: #fff; }
+  body:has(a:hover) #cursor-ring,
+  body:has(button:hover) #cursor-ring { width: 54px; height: 54px; border-color: var(--neon2); }
+
+  /* ====== GRID BG ====== */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ====== NOISE OVERLAY ====== */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* ====== GLOW ORBS ====== */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 { width: 500px; height: 500px; background: rgba(124,58,255,0.12); top: -100px; left: -100px; }
+  .orb2 { width: 400px; height: 400px; background: rgba(0,240,255,0.07); bottom: 100px; right: -100px; }
+  .orb3 { width: 300px; height: 300px; background: rgba(168,85,247,0.08); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  /* ====== NAV ====== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2.5rem;
+    background: rgba(5,5,8,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--neon);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-logo span { color: var(--text2); font-size: 0.75rem; letter-spacing: 0.15em; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text2);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--neon); }
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--success);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: 0.2; }
+  }
+
+  /* ====== SECTIONS ====== */
+  section { position: relative; z-index: 1; }
+
+  /* ====== HERO ====== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--neon);
+    letter-spacing: 0.12em;
+    margin-bottom: 2rem;
+    background: rgba(124,58,255,0.08);
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-title {
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero-title .grad {
+    background: linear-gradient(135deg, #b57bff, #7c3aff, #00f0ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-family: var(--mono);
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    color: var(--text2);
+    max-width: 560px;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ====== BUTTONS ====== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.8rem 1.8rem;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: none;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.08);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .btn:hover::before { opacity: 1; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 24px rgba(124,58,255,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-primary:hover { box-shadow: 0 0 40px rgba(124,58,255,0.6), inset 0 1px 0 rgba(255,255,255,0.15); transform: translateY(-2px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .btn-outline:hover { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 20px rgba(181,123,255,0.2); }
+
+  /* ====== SECTION HEADER ====== */
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent2);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .section-title .accent { color: var(--neon); }
+
+  /* ====== CONTAINER ====== */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+  .py-section { padding: 6rem 0; }
+
+  /* ====== PROJECT CARD ====== */
+  .project-section { padding: 6rem 0; }
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .project-card:hover::before { opacity: 1; }
+  .project-card:hover {
+    border-color: var(--border2);
+    box-shadow: 0 0 60px rgba(124,58,255,0.1);
+  }
+  .proj-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    background: rgba(124,58,255,0.12);
+    border: 1px solid rgba(124,58,255,0.3);
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin-bottom: 1rem;
+  }
+  .proj-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.8rem;
+    line-height: 1.1;
+  }
+  .proj-desc {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text2);
+    line-height: 1.9;
+    margin-bottom: 1.5rem;
+  }
+  .proj-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--neon);
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .proj-visual {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 2;
+    color: var(--text2);
+    position: relative;
+    overflow: hidden;
+  }
+  .proj-visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(124,58,255,0.12), transparent 70%);
+  }
+  .log-line { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .log-time { color: var(--text3); white-space: nowrap; }
+  .log-ok { color: var(--success); }
+  .log-warn { color: var(--warn); }
+  .log-err { color: var(--danger); }
+  .log-info { color: var(--neon2); }
+
+  /* ====== AUTH SYSTEM ====== */
+  .auth-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2rem;
+    transition: border-color 0.3s, transform 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-4px);
+  }
+  .auth-card-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: rgba(124,58,255,0.15);
+    border: 1px solid rgba(124,58,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  .auth-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.6rem;
+  }
+  .auth-card-desc {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .feature-list li {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feature-list li::before {
+    content: '▸';
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+  .feature-list li.done::before { content: '✓'; color: var(--success); }
+
+  /* ====== DEMO PANEL ====== */
+  .demo-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 2rem;
+  }
+  .demo-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .demo-tab {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 1rem 1.5rem;
+    color: var(--text3);
+    cursor: none;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    letter-spacing: 0.08em;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .demo-tab.active {
+    color: var(--neon);
+    border-bottom-color: var(--neon);
+    background: rgba(181,123,255,0.05);
+  }
+  .demo-tab:hover { color: var(--text); }
+  .demo-pane { padding: 2rem; display: none; }
+  .demo-pane.active { display: block; }
+
+  /* ====== FORM ====== */
+  .form-group { margin-bottom: 1.2rem; }
+  .form-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text2);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .form-input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-input:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(124,58,255,0.15);
+  }
+  .form-input::placeholder { color: var(--text3); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-hint {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text3);
+    margin-top: 0.4rem;
+  }
+
+  /* ====== OTP INPUT ====== */
+  .otp-grid {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1.5rem 0;
+  }
+  .otp-box {
+    width: 52px; height: 60px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    caret-color: var(--neon);
+  }
+  .otp-box:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(124,58,255,0.2);
+  }
+  .otp-timer {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text2);
+    margin-bottom: 1rem;
+  }
+  .otp-timer .countdown {
+    color: var(--danger);
+    font-weight: 700;
+  }
+  .otp-timer .countdown.safe { color: var(--success); }
+
+  /* ====== TOAST ====== */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .toast-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 340px;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast-item.success { border-left: 3px solid var(--success); }
+  .toast-item.error { border-left: 3px solid var(--danger); }
+  .toast-item.info { border-left: 3px solid var(--neon2); }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ====== API ENDPOINTS ====== */
+  .endpoints-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .endpoint-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .endpoint-card:hover { border-color: var(--border2); }
+  .method-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .method-post { background: rgba(124,58,255,0.2); color: var(--neon); border: 1px solid rgba(124,58,255,0.4); }
+  .method-get { background: rgba(0,229,160,0.1); color: var(--success); border: 1px solid rgba(0,229,160,0.3); }
+  .endpoint-path {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .endpoint-desc {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text3);
+  }
+
+  /* ====== DB SCHEMA ====== */
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .schema-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .schema-head {
+    background: var(--bg2);
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .schema-table-name {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent2);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .schema-body { padding: 0.5rem 0; }
+  .schema-row {
+    padding: 0.5rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    border-bottom: 1px solid rgba(120,80,255,0.06);
+  }
+  .schema-row:last-child { border-bottom: none; }
+  .schema-field { color: var(--text); flex: 1; }
+  .schema-type { color: var(--text3); font-size: 0.7rem; }
+  .schema-pk {
+    font-size: 0.6rem;
+    background: rgba(245,158,11,0.15);
+    color: var(--warn);
+    border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  /* ====== SECURITY ====== */
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .security-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+  .security-icon {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    background: rgba(0,229,160,0.1);
+  }
+  .security-text h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .security-text p {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* ====== COPYRIGHT ====== */
+  .copyright-section {
+    padding: 6rem 0 4rem;
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .copyright-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .copyright-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .copyright-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top, rgba(124,58,255,0.08), transparent 60%);
+  }
+  .copyright-name {
+    font-size: 4rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .copyright-name a {
+    background: linear-gradient(135deg, #b57bff, #7c3aff, #00f0ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    transition: filter 0.3s;
+  }
+  .copyright-name a:hover { filter: brightness(1.2); }
+  .copyright-tagline {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text2);
+    line-height: 2;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    position: relative;
+  }
+  .copyright-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+    position: relative;
+  }
+  .legal-text {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text3);
+    line-height: 2;
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  .legal-text strong { color: var(--text2); }
+  .security-notice {
+    background: rgba(255,68,102,0.06);
+    border: 1px solid rgba(255,68,102,0.2);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+  .security-notice p {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 2;
+  }
+  .security-notice .highlight { color: var(--neon2); font-weight: 700; }
+  .security-notice .danger-text { color: var(--danger); }
+  .final-note {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text3);
+    margin-top: 1.5rem;
+    position: relative;
+  }
+  .final-note .italic { font-style: italic; color: var(--accent2); }
+
+  /* ====== PROGRESS BAR ====== */
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--neon2));
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* ====== TIMELINE ====== */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 1rem; padding-bottom: 1.2rem; position: relative; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 16px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .tl-dot {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    flex-shrink: 0;
+    margin-top: 3px;
+    position: relative;
+    z-index: 1;
+  }
+  .tl-dot-active {
+    background: var(--accent);
+    border-color: var(--neon);
+    box-shadow: 0 0 12px rgba(124,58,255,0.6);
+  }
+  .tl-date { font-family: var(--mono); font-size: 0.68rem; color: var(--accent2); letter-spacing: 0.1em; margin-bottom: 3px; }
+  .tl-title { font-family: var(--sans); font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .tl-desc { font-family: var(--mono); font-size: 0.72rem; color: var(--text2); line-height: 1.7; }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .project-card { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .hero-title { font-size: 3rem; }
+    .copyright-name { font-size: 2.5rem; }
+    .copyright-box { padding: 2rem 1.5rem; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ====== SCROLLBAR ====== */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  /* ====== SELECTION ====== */
+  ::selection { background: rgba(124,58,255,0.4); color: #fff; }
+
+  /* ====== ANIMATIONS ====== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ====== PILL TAGS ====== */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+  .pill-purple { background: rgba(124,58,255,0.15); color: var(--neon); border: 1px solid rgba(124,58,255,0.3); }
+  .pill-cyan { background: rgba(0,240,255,0.08); color: var(--neon2); border: 1px solid rgba(0,240,255,0.2); }
+  .pill-green { background: rgba(0,229,160,0.08); color: var(--success); border: 1px solid rgba(0,229,160,0.2); }
+
+  /* ====== CONSOLE LIVE ====== */
+  .console-box {
+    background: #070710;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text2);
+    min-height: 160px;
+    overflow: hidden;
+  }
+  .console-line {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 4px;
+    opacity: 0;
+    animation: consoleFade 0.3s ease forwards;
+  }
+  .console-prompt { color: var(--accent2); flex-shrink: 0; }
+  @keyframes consoleFade {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* hover cursor for interactive elements */
+  a, button, .demo-tab, .btn, input, .otp-box {
+    cursor: none !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<canvas id="cursor-trail"></canvas>
+
+<!-- Ambient orbs -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- Toast container -->
+<div id="toast"></div>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">
+    ▸ COD1
+    <span>ECOSYSTEM v2.0</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#project">Project</a></li>
+    <li><a href="#auth">Auth System</a></li>
+    <li><a href="#api">API</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#copyright">License</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      ALL SYSTEMS ONLINE
+    </div>
+    <a href="login.html" class="btn btn-primary" style="padding:0.5rem 1.2rem;font-size:0.75rem;">▸ Login</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="hero-badge">
+    <div class="status-dot"></div>
+    WELCOME TO COD1'S ECOSYSTEM
+  </div>
+  <h1 class="hero-title">
+    <span class="grad">BUILT</span><br>
+    DIFFERENT.<br>
+    <span style="color:var(--text2); font-size:0.5em; letter-spacing:0; font-weight:400; font-family:var(--mono)">engineered with obsession.</span>
+  </h1>
+  <p class="hero-sub">
+    A production-grade authentication and notification system.<br>
+    Email verification · OTP · Invoices · Security · Monitoring.
+  </p>
+  <div class="hero-actions">
+    <a href="#auth" class="btn btn-primary">▸ Launch Demo</a>
+    <a href="#project" class="btn btn-outline">View Project</a>
+  </div>
+</section>
+
+<!-- Project showcase -->
+<section id="project" class="project-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// PROJECT.01</div>
+      <h2 class="section-title">Driver <span class="accent">Monitor</span> System</h2>
+    </div>
+    <div class="project-card reveal">
+      <div>
+        <div class="proj-tag">🎓 RASPBERRY PI · CV · DLIB</div>
+        <h3 class="proj-title">Real-Time Drowsiness Detection</h3>
+        <p class="proj-desc">
+          Embedded AI system running on Raspberry Pi with PiCamera2, detecting driver drowsiness via Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) using dlib's 68-point facial landmarks. GPIO-controlled LEDs and buzzer alert system with espeak voice alerts.
+        </p>
+        <div class="proj-stats">
+          <div class="stat">
+            <div class="stat-val">0.23</div>
+            <div class="stat-label">EAR Threshold</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">0.58</div>
+            <div class="stat-label">MAR Threshold</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">&lt;3s</div>
+            <div class="stat-label">Alert Trigger</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <span class="pill pill-purple">EAR Detection</span>
+          <span class="pill pill-cyan">GPIO Control</span>
+          <span class="pill pill-green">Night Vision</span>
+          <span class="pill pill-purple">TOTP</span>
+        </div>
+      </div>
+      <div class="proj-visual">
+        <div id="live-log"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Auth System Demo -->
+<section id="auth" class="py-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// SYSTEM.02</div>
+      <h2 class="section-title">Auth & <span class="accent">Notification</span> System</h2>
+    </div>
+
+    <div class="auth-grid reveal" style="margin-bottom:2rem;">
+      <div class="auth-card">
+        <div class="auth-card-icon">✉</div>
+        <div class="auth-card-title">Email Verification</div>
+        <div class="auth-card-desc">Secure token-based email verification with 15-minute expiry, hashed storage, and beautiful HTML email templates.</div>
+        <ul class="feature-list">
+          <li class="done">Secure token generation (crypto.randomBytes)</li>
+          <li class="done">15-minute expiration window</li>
+          <li class="done">Hashed token storage (bcrypt)</li>
+          <li class="done">Resend with rate limiting</li>
+          <li class="done">Prevent duplicate registration</li>
+        </ul>
+      </div>
+      <div class="auth-card">
+        <div class="auth-card-icon">📱</div>
+        <div class="auth-card-title">Phone OTP (30 sec TOTP)</div>
+        <div class="auth-card-desc">Time-based OTP via TOTP algorithm — never stored in plaintext. 30-second validity with 1 retry, brute-force protected.</div>
+        <ul class="feature-list">
+          <li class="done">TOTP algorithm (RFC 6238)</li>
+          <li class="done">30-second validity window</li>
+          <li class="done">Never stored in plaintext</li>
+          <li class="done">1 retry attempt allowed</li>
+          <li class="done">Rate limiting per phone</li>
+        </ul>
+      </div>
+      <div class="auth-card">
+        <div class="auth-card-icon">💳</div>
+        <div class="auth-card-title">Payment & GST Invoice</div>
+        <div class="auth-card-desc">Auto-generate PDF tax invoices with GSTIN, CGST/SGST/IGST on successful payment, emailed instantly.</div>
+        <ul class="feature-list">
+          <li class="done">Unique invoice number gen</li>
+          <li class="done">PDF with CGST/SGST/IGST</li>
+          <li class="done">Auto email on payment</li>
+          <li class="done">Downloadable at any time</li>
+          <li class="done">GST-compliant format</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Interactive Demo -->
+    <div class="demo-section reveal">
+      <div class="demo-tabs">
+        <button class="demo-tab active" onclick="switchTab('register')">Register</button>
+        <button class="demo-tab" onclick="switchTab('verify-email')">Email Verify</button>
+        <button class="demo-tab" onclick="switchTab('otp')">Phone OTP</button>
+        <button class="demo-tab" onclick="switchTab('payment')">Payment</button>
+        <button class="demo-tab" onclick="switchTab('invoice')">Invoice</button>
+      </div>
+
+      <!-- Register -->
+      <div class="demo-pane active" id="pane-register">
+        <div style="max-width:480px;">
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Create Account</h3>
+          <p style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem;">POST /register — Production-ready with validation</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">FIRST NAME</label>
+              <input class="form-input" id="reg-fname" placeholder="COD1" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">LAST NAME</label>
+              <input class="form-input" id="reg-lname" placeholder="Engineer" type="text">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">EMAIL ADDRESS</label>
+            <input class="form-input" id="reg-email" placeholder="you@gmail.com" type="email">
+            <div class="form-hint">▸ Verification link will be sent here</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">PHONE NUMBER</label>
+            <input class="form-input" id="reg-phone" placeholder="+91 98765 43210" type="tel">
+          </div>
+          <div class="form-group">
+            <label class="form-label">PASSWORD</label>
+            <input class="form-input" id="reg-pass" placeholder="••••••••••" type="password">
+            <div class="form-hint">▸ Min 8 chars, hashed with bcrypt</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="simulateRegister()">
+            ▸ Register & Send Verification Email
+          </button>
+        </div>
+      </div>
+
+      <!-- Email Verify -->
+      <div class="demo-pane" id="pane-verify-email">
+        <div style="max-width:480px;">
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Email Verification</h3>
+          <p style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem;">GET /verify-email?token=TOKEN</p>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;">
+            <div style="font-family:var(--mono);font-size:0.75rem;color:var(--text3);margin-bottom:0.8rem;">SAMPLE VERIFICATION LINK</div>
+            <div style="font-family:var(--mono);font-size:0.72rem;color:var(--neon2);word-break:break-all;line-height:1.8;">
+              https://cod1.ecosystem/verify-email?token=<span style="color:var(--accent2);" id="sample-token">eyJhbGciOiJIUzI1NiJ9.abc123xyz</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">PASTE YOUR TOKEN</label>
+            <input class="form-input" id="email-token" placeholder="Paste token from email..." type="text">
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+            <div style="font-family:var(--mono);font-size:0.72rem;color:var(--text3);">TOKEN STATUS</div>
+            <div style="display:flex;justify-content:space-between;margin-top:0.5rem;">
+              <span style="font-family:var(--mono);font-size:0.75rem;">Expires in</span>
+              <span style="font-family:var(--mono);font-size:0.75rem;color:var(--success);" id="token-timer">14:32</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="token-progress" style="width:96%"></div></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="simulateVerifyEmail()">
+            ▸ Verify Email Token
+          </button>
+        </div>
+      </div>
+
+      <!-- OTP -->
+      <div class="demo-pane" id="pane-otp">
+        <div style="max-width:480px;">
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Phone OTP Verification</h3>
+          <p style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem;">POST /send-otp → POST /verify-otp</p>
+          <div class="form-group">
+            <label class="form-label">PHONE NUMBER</label>
+            <div style="display:flex;gap:0.5rem;">
+              <input class="form-input" id="otp-phone" placeholder="+91 98765 43210" type="tel" style="flex:1;">
+              <button class="btn btn-outline" onclick="sendOTP()" style="white-space:nowrap;padding:0.75rem 1rem;font-size:0.75rem;">Send OTP</button>
+            </div>
+            <div class="form-hint">▸ SMS via Twilio · TOTP algorithm · 30s validity</div>
+          </div>
+          <div id="otp-section" style="display:none;">
+            <div class="otp-timer">
+              <div>Enter the 6-digit OTP sent to your phone</div>
+              <div>Expires in <span class="countdown" id="otp-countdown">0:30</span></div>
+            </div>
+            <div class="otp-grid" id="otp-grid">
+              <input class="otp-box" maxlength="1" type="text" inputmode="numeric" oninput="otpMove(this, 0)">
+              <input class="otp-box" maxlength="1" type="text" inputmode="numeric" oninput="otpMove(this, 1)">
+              <input class="otp-box" maxlength="1" type="text" inputmode="numeric" oninput="otpMove(this, 2)">
+              <input class="otp-box" maxlength="1" type="text" inputmode="numeric" oninput="otpMove(this, 3)">
+              <input class="otp-box" maxlength="1" type="text" inputmode="numeric" oninput="otpMove(this, 4)">
+              <input class="otp-box" maxlength="1" type="text" inputmode="numeric" oninput="otpMove(this, 5)">
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="verifyOTP()">
+              ▸ Verify OTP
+            </button>
+            <div style="text-align:center;margin-top:0.8rem;">
+              <button onclick="sendOTP()" style="background:none;border:none;font-family:var(--mono);font-size:0.72rem;color:var(--text3);">
+                Resend OTP (1 retry remaining)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="demo-pane" id="pane-payment">
+        <div style="max-width:480px;">
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Process Payment</h3>
+          <p style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem;">POST /payment-success — Auto-generates GST invoice</p>
+          <div class="form-group">
+            <label class="form-label">PRODUCT / SERVICE</label>
+            <input class="form-input" id="pay-product" placeholder="Driver Monitor System License" type="text">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">AMOUNT (₹)</label>
+              <input class="form-input" id="pay-amount" placeholder="4999" type="number" oninput="calcTax()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST TYPE</label>
+              <select class="form-input" id="pay-gst" onchange="calcTax()">
+                <option value="igst">IGST 18% (Inter-state)</option>
+                <option value="cgst">CGST + SGST (Intra-state)</option>
+              </select>
+            </div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;margin-bottom:1.5rem;font-family:var(--mono);font-size:0.8rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:var(--text3);">Base Amount</span><span id="tax-base">₹0.00</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;" id="tax-row1"><span style="color:var(--text3);">IGST @18%</span><span id="tax-val1">₹0.00</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;display:none;" id="tax-row2"><span style="color:var(--text3);">CGST @9%</span><span id="tax-val2">₹0.00</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;display:none;" id="tax-row3"><span style="color:var(--text3);">SGST @9%</span><span id="tax-val3">₹0.00</span></div>
+            <div style="height:1px;background:var(--border);margin:0.8rem 0;"></div>
+            <div style="display:flex;justify-content:space-between;font-weight:700;"><span>Total</span><span style="color:var(--neon);" id="tax-total">₹0.00</span></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="processPayment()">
+            ▸ Confirm Payment & Generate Invoice
+          </button>
+        </div>
+      </div>
+
+      <!-- Invoice -->
+      <div class="demo-pane" id="pane-invoice">
+        <div style="max-width:560px;">
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Tax Invoice Preview</h3>
+          <p style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem;">GET /download-invoice — Auto-emailed on payment</p>
+          <div style="background:#fff;border-radius:10px;padding:2rem;color:#111;font-family:var(--mono);" id="invoice-preview">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;border-bottom:2px solid #7c3aff;padding-bottom:1rem;">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#7c3aff;">COD1 ECOSYSTEM</div>
+                <div style="font-size:0.7rem;color:#666;margin-top:2px;">GSTIN: 24AABCU9603R1ZM</div>
+                <div style="font-size:0.7rem;color:#666;">Ahmedabad, Gujarat — 380001</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.65rem;color:#999;letter-spacing:0.1em;">TAX INVOICE</div>
+                <div style="font-size:1rem;font-weight:700;color:#111;" id="inv-number">INV-2026-0001</div>
+                <div style="font-size:0.7rem;color:#666;" id="inv-date">Date: 29 Mar 2026</div>
+              </div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.78rem;margin-bottom:1rem;">
+              <thead>
+                <tr style="background:#f5f0ff;">
+                  <th style="padding:8px;text-align:left;font-weight:700;color:#7c3aff;">Description</th>
+                  <th style="padding:8px;text-align:right;font-weight:700;color:#7c3aff;">HSN</th>
+                  <th style="padding:8px;text-align:right;font-weight:700;color:#7c3aff;">Qty</th>
+                  <th style="padding:8px;text-align:right;font-weight:700;color:#7c3aff;">Rate</th>
+                  <th style="padding:8px;text-align:right;font-weight:700;color:#7c3aff;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #eee;" id="inv-item">Driver Monitor System License</td>
+                  <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;">998314</td>
+                  <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;">1</td>
+                  <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;" id="inv-rate">₹4,999</td>
+                  <td style="padding:8px;text-align:right;border-bottom:1px solid #eee;" id="inv-amount">₹4,999</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="min-width:220px;font-size:0.78rem;">
+                <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;"><span>Subtotal</span><span id="inv-sub">₹4,999.00</span></div>
+                <div style="display:flex;justify-content:space-between;padding:4px 0;color:#666;" id="inv-tax-line"><span>IGST @18%</span><span id="inv-tax">₹899.82</span></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700;color:#7c3aff;border-top:2px solid #7c3aff;margin-top:4px;"><span>TOTAL</span><span id="inv-total">₹5,898.82</span></div>
+              </div>
+            </div>
+            <div style="margin-top:1.5rem;padding:0.8rem;background:#f5f0ff;border-radius:6px;font-size:0.7rem;color:#666;">
+              This is a computer-generated invoice. No signature required. · © 2026 COD1 Ecosystem
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="showToast('📧 Invoice emailed to registered address!', 'success')">
+            ▸ Email Invoice
+          </button>
+          <button class="btn btn-outline" style="margin-top:1rem;margin-left:0.5rem;" onclick="showToast('📥 Invoice PDF downloaded!', 'info')">
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API Endpoints -->
+<section id="api" class="py-section" style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// API.03</div>
+      <h2 class="section-title">API <span class="accent">Endpoints</span></h2>
+    </div>
+    <div class="endpoints-grid reveal">
+      <div class="endpoint-card">
+        <span class="method-badge method-post">POST</span>
+        <div>
+          <div class="endpoint-path">/register</div>
+          <div class="endpoint-desc">Register with email, phone, password. Sends verification email.</div>
+        </div>
+      </div>
+      <div class="endpoint-card">
+        <span class="method-badge method-post">POST</span>
+        <div>
+          <div class="endpoint-path">/send-email-verification</div>
+          <div class="endpoint-desc">Resend verification email. Rate limited.</div>
+        </div>
+      </div>
+      <div class="endpoint-card">
+        <span class="method-badge method-get">GET</span>
+        <div>
+          <div class="endpoint-path">/verify-email</div>
+          <div class="endpoint-desc">Validate token, mark email_verified=true.</div>
+        </div>
+      </div>
+      <div class="endpoint-card">
+        <span class="method-badge method-post">POST</span>
+        <div>
+          <div class="endpoint-path">/send-otp</div>
+          <div class="endpoint-desc">Generate TOTP, send via Twilio SMS.</div>
+        </div>
+      </div>
+      <div class="endpoint-card">
+        <span class="method-badge method-post">POST</span>
+        <div>
+          <div class="endpoint-path">/verify-otp</div>
+          <div class="endpoint-desc">Validate 30-sec TOTP. 1 retry allowed.</div>
+        </div>
+      </div>
+      <div class="endpoint-card">
+        <span class="method-badge method-post">POST</span>
+        <div>
+          <div class="endpoint-path">/payment-success</div>
+          <div class="endpoint-desc">Generate invoice, send email with PDF.</div>
+        </div>
+      </div>
+      <div class="endpoint-card">
+        <span class="method-badge method-get">GET</span>
+        <div>
+          <div class="endpoint-path">/download-invoice</div>
+          <div class="endpoint-desc">Download PDF invoice by invoice ID.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DB Schema -->
+<section class="py-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// DATABASE.04</div>
+      <h2 class="section-title">Database <span class="accent">Schema</span></h2>
+    </div>
+    <div class="schema-grid reveal">
+      <div class="schema-table">
+        <div class="schema-head">
+          <span style="color:var(--accent2);">🗄</span>
+          <span class="schema-table-name">users</span>
+        </div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">UUID</span><span class="schema-pk">PK</span></div>
+          <div class="schema-row"><span class="schema-field">email</span><span class="schema-type">VARCHAR UNIQUE</span></div>
+          <div class="schema-row"><span class="schema-field">phone</span><span class="schema-type">VARCHAR</span></div>
+          <div class="schema-row"><span class="schema-field">password</span><span class="schema-type">TEXT (bcrypt)</span></div>
+          <div class="schema-row"><span class="schema-field">email_verified</span><span class="schema-type">BOOLEAN</span></div>
+          <div class="schema-row"><span class="schema-field">created_at</span><span class="schema-type">TIMESTAMP</span></div>
+        </div>
+      </div>
+      <div class="schema-table">
+        <div class="schema-head">
+          <span style="color:var(--accent2);">🔑</span>
+          <span class="schema-table-name">otp_secrets</span>
+        </div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">UUID</span><span class="schema-pk">PK</span></div>
+          <div class="schema-row"><span class="schema-field">user_id</span><span class="schema-type">UUID FK</span></div>
+          <div class="schema-row"><span class="schema-field">otp_secret</span><span class="schema-type">TEXT (encrypted)</span></div>
+          <div class="schema-row"><span class="schema-field">attempts</span><span class="schema-type">INT DEFAULT 0</span></div>
+          <div class="schema-row"><span class="schema-field">expires_at</span><span class="schema-type">TIMESTAMP</span></div>
+          <div class="schema-row"><span class="schema-field">created_at</span><span class="schema-type">TIMESTAMP</span></div>
+        </div>
+      </div>
+      <div class="schema-table">
+        <div class="schema-head">
+          <span style="color:var(--accent2);">🧾</span>
+          <span class="schema-table-name">invoices</span>
+        </div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="schema-field">id</span><span class="schema-type">UUID</span><span class="schema-pk">PK</span></div>
+          <div class="schema-row"><span class="schema-field">user_id</span><span class="schema-type">UUID FK</span></div>
+          <div class="schema-row"><span class="schema-field">invoice_number</span><span class="schema-type">VARCHAR UNIQUE</span></div>
+          <div class="schema-row"><span class="schema-field">amount</span><span class="schema-type">DECIMAL(10,2)</span></div>
+          <div class="schema-row"><span class="schema-field">tax</span><span class="schema-type">DECIMAL(10,2)</span></div>
+          <div class="schema-row"><span class="schema-field">status</span><span class="schema-type">ENUM paid/pending</span></div>
+          <div class="schema-row"><span class="schema-field">created_at</span><span class="schema-type">TIMESTAMP</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Security -->
+<section id="security" class="py-section" style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// SECURITY.05</div>
+      <h2 class="section-title">Security <span class="accent">Architecture</span></h2>
+    </div>
+    <div class="security-grid reveal">
+      <div class="security-item">
+        <div class="security-icon">🔒</div>
+        <div class="security-text">
+          <h4>HTTPS Only</h4>
+          <p>All traffic encrypted via TLS 1.3. HTTP redirects to HTTPS.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">🔐</div>
+        <div class="security-text">
+          <h4>Hashed Tokens</h4>
+          <p>Email tokens hashed with SHA-256. Passwords with bcrypt rounds=12.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">⏱</div>
+        <div class="security-text">
+          <h4>Rate Limiting</h4>
+          <p>5 OTP requests/hour per IP. Email resend max 3/hour.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">🛡</div>
+        <div class="security-text">
+          <h4>Brute Force Guard</h4>
+          <p>OTP locked after 2 wrong attempts. Account locked after 5 failed logins.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">📋</div>
+        <div class="security-text">
+          <h4>Audit Logging</h4>
+          <p>All auth attempts, OTP requests, payments logged with timestamps & IPs.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">🌍</div>
+        <div class="security-text">
+          <h4>Phone Validation</h4>
+          <p>E.164 format enforced. Country code required. Duplicate check active.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">🔑</div>
+        <div class="security-text">
+          <h4>Env Variables</h4>
+          <p>All secrets in .env. Never hardcoded. Rotated via vault.</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <div class="security-icon">📦</div>
+        <div class="security-text">
+          <h4>No Plaintext OTP</h4>
+          <p>TOTP secret encrypted at rest. OTP computed on-demand, never stored.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live console -->
+    <div style="margin-top:2rem;" class="reveal">
+      <div style="font-family:var(--mono);font-size:0.72rem;color:var(--text3);margin-bottom:0.5rem;letter-spacing:0.1em;">// LIVE SECURITY LOG</div>
+      <div class="console-box" id="security-console"></div>
+    </div>
+  </div>
+</section>
+
+<!-- About COD1 -->
+<section id="about" class="py-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// ABOUT.06</div>
+      <h2 class="section-title">About <span class="accent">COD1</span></h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;" class="reveal about-grid">
+      <!-- Left: identity -->
+      <div>
+        <div style="width:90px;height:90px;border-radius:20px;background:linear-gradient(135deg,#7c3aff,#00f0ff);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:2rem;font-weight:700;color:#fff;margin-bottom:1.8rem;box-shadow:0 0 40px rgba(124,58,255,0.4);">C1</div>
+        <h3 style="font-size:2.2rem;font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1rem;">Welcome to<br><span style="background:linear-gradient(135deg,#b57bff,#00f0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">COD1's Ecosystem.</span></h3>
+        <p style="font-family:var(--mono);font-size:0.82rem;color:var(--text2);line-height:2;margin-bottom:1.5rem;">
+          COD1 is an independent engineer building production-grade systems from the ground up — embedded AI, backend infrastructure, authentication, real-time monitoring, and everything in between.<br><br>
+          Not a tutorial follower. Not a copy-paster.<br>
+          Every line is written with intent.
+        </p>
+        <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+          <span class="pill pill-purple">Raspberry Pi</span>
+          <span class="pill pill-cyan">Computer Vision</span>
+          <span class="pill pill-green">Backend Systems</span>
+          <span class="pill pill-purple">Auth Engineering</span>
+          <span class="pill pill-cyan">GST Invoicing</span>
+          <span class="pill pill-green">Embedded AI</span>
+        </div>
+      </div>
+      <!-- Right: stats + timeline -->
+      <div style="display:flex;flex-direction:column;gap:1.2rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;">
+          <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text3);letter-spacing:0.12em;margin-bottom:1.2rem;">// CORE STACK</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+            <div class="stack-item">
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);">Language</div>
+              <div style="font-family:var(--mono);font-size:0.88rem;color:var(--neon);font-weight:700;">Python · Node.js</div>
+            </div>
+            <div class="stack-item">
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);">Hardware</div>
+              <div style="font-family:var(--mono);font-size:0.88rem;color:var(--neon);font-weight:700;">Raspberry Pi 4</div>
+            </div>
+            <div class="stack-item">
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);">CV Library</div>
+              <div style="font-family:var(--mono);font-size:0.88rem;color:var(--neon);font-weight:700;">dlib · OpenCV</div>
+            </div>
+            <div class="stack-item">
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);">Auth</div>
+              <div style="font-family:var(--mono);font-size:0.88rem;color:var(--neon);font-weight:700;">TOTP · bcrypt · JWT</div>
+            </div>
+            <div class="stack-item">
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);">SMS Provider</div>
+              <div style="font-family:var(--mono);font-size:0.88rem;color:var(--neon);font-weight:700;">Twilio</div>
+            </div>
+            <div class="stack-item">
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text2);">Database</div>
+              <div style="font-family:var(--mono);font-size:0.88rem;color:var(--neon);font-weight:700;">PostgreSQL</div>
+            </div>
+          </div>
+        </div>
+        <!-- Timeline -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.8rem;">
+          <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text3);letter-spacing:0.12em;margin-bottom:1.2rem;">// JOURNEY</div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-content">
+                <div class="tl-date">2024</div>
+                <div class="tl-title">Started embedded systems</div>
+                <div class="tl-desc">GPIO, sensors, Raspberry Pi projects</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-content">
+                <div class="tl-date">2025</div>
+                <div class="tl-title">Computer Vision</div>
+                <div class="tl-desc">Real-time face & drowsiness detection with dlib</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-dot-active"></div>
+              <div class="tl-content">
+                <div class="tl-date">2026 ← NOW</div>
+                <div class="tl-title">COD1 Ecosystem</div>
+                <div class="tl-desc">Full-stack auth, invoicing, monitoring platform</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="py-section" style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">// CONTACT.07</div>
+      <h2 class="section-title">Get In <span class="accent">Touch</span></h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;" class="reveal contact-grid">
+      <!-- Left info -->
+      <div>
+        <p style="font-family:var(--mono);font-size:0.85rem;color:var(--text2);line-height:2;margin-bottom:2rem;">
+          Have a project idea, collaboration, or just want to talk systems? Drop a message. Every message is read personally by COD1.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem;">
+          <div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:rgba(124,58,255,0.15);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📧</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin-bottom:2px;">EMAIL</div>
+              <div style="font-family:var(--mono);font-size:0.82rem;color:var(--neon);">cod1@ecosystem.dev</div>
+            </div>
+          </div>
+          <a href="https://www.instagram.com/5v3dd" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;text-decoration:none;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:36px;height:36px;border-radius:8px;background:rgba(0,240,255,0.08);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📸</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin-bottom:2px;">INSTAGRAM</div>
+              <div style="font-family:var(--mono);font-size:0.82rem;color:var(--neon2);">@5v3dd</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--mono);font-size:0.7rem;color:var(--text3);">↗</div>
+          </a>
+          <div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:rgba(0,229,160,0.08);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📍</div>
+            <div>
+              <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text3);margin-bottom:2px;">LOCATION</div>
+              <div style="font-family:var(--mono);font-size:0.82rem;color:var(--success);">Ahmedabad, Gujarat, India</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;">
+          <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:0.8rem;">// RESPONSE TIME</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="status-dot"></div>
+            <span style="font-family:var(--mono);font-size:0.78rem;color:var(--success);">Usually within 24 hours</span>
+          </div>
+        </div>
+      </div>
+      <!-- Right: form -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem;">
+        <div class="form-group">
+          <label class="form-label">YOUR NAME</label>
+          <input class="form-input" id="contact-name" placeholder="Your name" type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">EMAIL ADDRESS</label>
+          <input class="form-input" id="contact-email" placeholder="you@gmail.com" type="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">SUBJECT</label>
+          <input class="form-input" id="contact-subject" placeholder="Project · Collab · Just saying hi" type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">MESSAGE</label>
+          <textarea class="form-input" id="contact-msg" placeholder="Tell me what's on your mind..." rows="5" style="resize:vertical;line-height:1.8;"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="sendContact()">
+          ▸ Send Message
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Copyright -->
+<section id="copyright" class="copyright-section">
+  <div class="container">
+    <div class="copyright-box reveal">
+      <div class="copyright-name">
+        <a href="https://www.instagram.com/5v3dd" target="_blank" rel="noopener">COD1</a>
+      </div>
+      <p class="copyright-tagline">
+        © 2026 COD1. All rights reserved.<br>
+        Every line of code, design element, system, and digital asset on this platform is the result of independent work, discipline, and relentless engineering. Copying without permission is not innovation. It is infringement.<br>
+        <strong style="color:var(--text);">Build your own systems. Respect mine.</strong>
+      </p>
+      <div class="copyright-divider"></div>
+      <p class="legal-text">
+        <strong>Legal Note</strong><br>
+        Unauthorized use, duplication, reverse engineering, exploitation, or redistribution of this website's content or infrastructure is strictly prohibited and will be addressed under applicable laws.<br>
+        <strong>This platform is monitored, logged, and protected.</strong>
+      </p>
+      <div class="security-notice">
+        <p>
+          <span class="highlight">Security and Challenge Notice</span><br><br>
+          If you believe you can break this system, try.<br>
+          But understand this clearly — <span class="danger-text">I built it. I watch it. I defend it.</span><br><br>
+          Every request is logged. Every action leaves a trace. And every trace can be followed.<br>
+          If you cross the line, I will detect the activity, investigate it thoroughly, and respond through the proper legal and technical channels.<br><br>
+          <span style="color:var(--neon2);">My coffee is strong. My logs are stronger.</span><br><br>
+          Curiosity is welcome. Malicious intent is not.
+        </p>
+      </div>
+      <p class="final-note">
+        <span class="italic">COD1 Ecosystem · Ahmedabad, Gujarat · 2026</span><br>
+        Engineered with obsession. Protected by law. Watched at all times.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+// ====== CURSOR ======
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
+const canvas = document.getElementById('cursor-trail');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let mouse = { x: 0, y: 0 };
+let ringPos = { x: 0, y: 0 };
+const trail = [];
+
+document.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  dot.style.left = e.clientX + 'px';
+  dot.style.top = e.clientY + 'px';
+  trail.push({ x: e.clientX, y: e.clientY, age: 0 });
+  if (trail.length > 40) trail.shift();
+});
+
+function animateCursor() {
+  ringPos.x += (mouse.x - ringPos.x) * 0.12;
+  ringPos.y += (mouse.y - ringPos.y) * 0.12;
+  ring.style.left = ringPos.x + 'px';
+  ring.style.top = ringPos.y + 'px';
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (trail.length > 2) {
+    ctx.beginPath();
+    ctx.moveTo(trail[0].x, trail[0].y);
+    for (let i = 1; i < trail.length; i++) {
+      const t = i / trail.length;
+      ctx.globalAlpha = t * 0.4;
+      ctx.strokeStyle = `hsl(${260 + t * 60}, 100%, 70%)`;
+      ctx.lineWidth = t * 2.5;
+      ctx.lineTo(trail[i].x, trail[i].y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// ====== REVEAL ON SCROLL ======
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(r => observer.observe(r));
+
+// ====== TOAST ======
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast');
+  const t = document.createElement('div');
+  t.className = `toast-item ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(24px)'; t.style.transition = '0.3s'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ====== TABS ======
+function switchTab(id) {
+  document.querySelectorAll('.demo-tab').forEach((t, i) => t.classList.remove('active'));
+  document.querySelectorAll('.demo-pane').forEach(p => p.classList.remove('active'));
+  const tabs = ['register','verify-email','otp','payment','invoice'];
+  const idx = tabs.indexOf(id);
+  document.querySelectorAll('.demo-tab')[idx].classList.add('active');
+  document.getElementById('pane-' + id).classList.add('active');
+}
+
+// ====== REGISTER ======
+function simulateRegister() {
+  const email = document.getElementById('reg-email').value;
+  const phone = document.getElementById('reg-phone').value;
+  if (!email || !phone) { showToast('⚠ Please fill all fields', 'error'); return; }
+  showToast('✅ Account created! Verification email sent to ' + email, 'success');
+  showToast('📱 OTP ready to send to ' + phone, 'info');
+  document.getElementById('sample-token').textContent = 'eyJ.' + btoa(email).substring(0,12) + '.' + Math.random().toString(36).substring(2,10);
+  setTimeout(() => switchTab('verify-email'), 1200);
+}
+
+// ====== EMAIL VERIFY ======
+let tokenInterval;
+let tokenSeconds = 872;
+function startTokenTimer() {
+  clearInterval(tokenInterval);
+  tokenInterval = setInterval(() => {
+    tokenSeconds = Math.max(0, tokenSeconds - 1);
+    const m = Math.floor(tokenSeconds / 60);
+    const s = tokenSeconds % 60;
+    document.getElementById('token-timer').textContent = m + ':' + String(s).padStart(2,'0');
+    document.getElementById('token-progress').style.width = (tokenSeconds / 900 * 100) + '%';
+    if (tokenSeconds === 0) clearInterval(tokenInterval);
+  }, 1000);
+}
+startTokenTimer();
+
+function simulateVerifyEmail() {
+  const token = document.getElementById('email-token').value;
+  if (!token) { showToast('⚠ Paste the token from your email', 'error'); return; }
+  if (tokenSeconds <= 0) { showToast('⏱ Token expired. Please request a new one.', 'error'); return; }
+  showToast('✅ Email verified successfully!', 'success');
+  setTimeout(() => switchTab('otp'), 800);
+}
+
+// ====== OTP ======
+let otpTimer, otpSeconds;
+function sendOTP() {
+  const phone = document.getElementById('otp-phone').value;
+  if (!phone) { showToast('⚠ Enter your phone number', 'error'); return; }
+  document.getElementById('otp-section').style.display = 'block';
+  otpSeconds = 30;
+  clearInterval(otpTimer);
+  const boxes = document.querySelectorAll('.otp-box');
+  boxes.forEach(b => { b.value = ''; b.style.borderColor = ''; });
+  boxes[0].focus();
+  const countdown = document.getElementById('otp-countdown');
+  const update = () => {
+    countdown.textContent = '0:' + String(otpSeconds).padStart(2,'0');
+    countdown.className = 'countdown' + (otpSeconds > 10 ? ' safe' : '');
+    if (otpSeconds <= 0) { clearInterval(otpTimer); countdown.textContent = 'EXPIRED'; countdown.className = 'countdown'; }
+  };
+  update();
+  otpTimer = setInterval(() => { otpSeconds--; update(); if (otpSeconds < 0) clearInterval(otpTimer); }, 1000);
+  showToast('📱 OTP sent to ' + phone + ' via Twilio', 'info');
+}
+
+function otpMove(el, idx) {
+  if (el.value.length === 1) {
+    const boxes = document.querySelectorAll('.otp-box');
+    if (idx < 5) boxes[idx + 1].focus();
+  }
+}
+
+function verifyOTP() {
+  const boxes = document.querySelectorAll('.otp-box');
+  const otp = Array.from(boxes).map(b => b.value).join('');
+  if (otp.length < 6) { showToast('⚠ Enter all 6 digits', 'error'); return; }
+  if (otpSeconds <= 0) { showToast('⏱ OTP expired. Request a new one.', 'error'); return; }
+  showToast('✅ Phone verified! OTP correct.', 'success');
+  setTimeout(() => switchTab('payment'), 800);
+}
+
+// ====== TAX CALC ======
+function calcTax() {
+  const amt = parseFloat(document.getElementById('pay-amount').value) || 0;
+  const type = document.getElementById('pay-gst').value;
+  const r1 = document.getElementById('tax-row1'), r2 = document.getElementById('tax-row2'), r3 = document.getElementById('tax-row3');
+  document.getElementById('tax-base').textContent = '₹' + amt.toFixed(2);
+  if (type === 'igst') {
+    r1.style.display = 'flex'; r2.style.display = 'none'; r3.style.display = 'none';
+    const tax = amt * 0.18;
+    document.getElementById('tax-val1').textContent = '₹' + tax.toFixed(2);
+    document.getElementById('tax-total').textContent = '₹' + (amt + tax).toFixed(2);
+  } else {
+    r1.style.display = 'none'; r2.style.display = 'flex'; r3.style.display = 'flex';
+    const cgst = amt * 0.09, sgst = amt * 0.09;
+    document.getElementById('tax-val2').textContent = '₹' + cgst.toFixed(2);
+    document.getElementById('tax-val3').textContent = '₹' + sgst.toFixed(2);
+    document.getElementById('tax-total').textContent = '₹' + (amt + cgst + sgst).toFixed(2);
+  }
+}
+
+// ====== PAYMENT ======
+let invNum = 1;
+function processPayment() {
+  const product = document.getElementById('pay-product').value || 'COD1 Ecosystem License';
+  const amount = parseFloat(document.getElementById('pay-amount').value) || 4999;
+  const type = document.getElementById('pay-gst').value;
+  showToast('💳 Payment processed successfully!', 'success');
+  const num = 'INV-2026-' + String(invNum++).padStart(4,'0');
+  document.getElementById('inv-number').textContent = num;
+  document.getElementById('inv-date').textContent = 'Date: ' + new Date().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('inv-item').textContent = product;
+  document.getElementById('inv-rate').textContent = '₹' + amount.toLocaleString('en-IN');
+  document.getElementById('inv-amount').textContent = '₹' + amount.toLocaleString('en-IN');
+  document.getElementById('inv-sub').textContent = '₹' + amount.toFixed(2);
+  const tax = amount * 0.18;
+  document.getElementById('inv-tax-line').children[0].textContent = type === 'igst' ? 'IGST @18%' : 'CGST 9% + SGST 9%';
+  document.getElementById('inv-tax').textContent = '₹' + tax.toFixed(2);
+  document.getElementById('inv-total').textContent = '₹' + (amount + tax).toFixed(2);
+  setTimeout(() => { showToast('📧 Invoice emailed automatically!', 'info'); switchTab('invoice'); }, 800);
+}
+
+// ====== CONTACT ======
+function sendContact() {
+  const name = document.getElementById('contact-name').value.trim();
+  const email = document.getElementById('contact-email').value.trim();
+  const msg = document.getElementById('contact-msg').value.trim();
+  if (!name || !email || !msg) { showToast('⚠ Please fill in all fields', 'error'); return; }
+  showToast('✅ Message sent! COD1 will get back to you.', 'success');
+  document.getElementById('contact-name').value = '';
+  document.getElementById('contact-email').value = '';
+  document.getElementById('contact-subject').value = '';
+  document.getElementById('contact-msg').value = '';
+}
+
+const logMessages = [
+  { t: '10:42:01', cls: 'log-ok', msg: '[OK] System initialized' },
+  { t: '10:42:02', cls: 'log-info', msg: '[CAM] PiCamera2 started 1280×720' },
+  { t: '10:42:04', cls: 'log-ok', msg: '[OK] dlib predictor loaded' },
+  { t: '10:42:05', cls: 'log-info', msg: '[GPIO] GREEN LED → ON' },
+  { t: '10:42:08', cls: 'log-ok', msg: '[FACE] Driver detected' },
+  { t: '10:42:09', cls: 'log-ok', msg: '[EAR] 0.31 — Eyes open' },
+  { t: '10:42:11', cls: 'log-warn', msg: '[YAWN] MAR=0.61 — Yawning detected' },
+  { t: '10:42:11', cls: 'log-warn', msg: '[ALERT] Yawning! Stay alert!' },
+  { t: '10:42:14', cls: 'log-ok', msg: '[EAR] 0.29 — Eyes open' },
+  { t: '10:42:17', cls: 'log-err', msg: '[EYES] EAR=0.19 — Eyes CLOSED' },
+  { t: '10:42:20', cls: 'log-err', msg: '[ALERT] 3s closed → DANGER MODE' },
+  { t: '10:42:22', cls: 'log-err', msg: '[GPIO] RED LED + BUZZER → ON' },
+  { t: '10:42:25', cls: 'log-err', msg: '[VOICE] "Wake up driver!"' },
+  { t: '10:42:27', cls: 'log-ok', msg: '[EAR] 0.33 — Eyes open, safe' },
+  { t: '10:42:27', cls: 'log-ok', msg: '[GPIO] GREEN LED restored' },
+];
+let logIdx = 0;
+const logEl = document.getElementById('live-log');
+function addLog() {
+  if (logIdx >= logMessages.length) logIdx = 0;
+  const l = logMessages[logIdx++];
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">${l.t}</span><span class="${l.cls}">${l.msg}</span>`;
+  logEl.appendChild(div);
+  if (logEl.children.length > 8) logEl.removeChild(logEl.firstChild);
+}
+setInterval(addLog, 1200);
+
+// ====== SECURITY CONSOLE ======
+const secLogs = [
+  '[AUTH] Login attempt from 103.X.X.X — SUCCESS',
+  '[RATE] OTP request blocked — limit exceeded for +91*****43210',
+  '[OTP] Token generated for user_id=u_2891 — expires in 30s',
+  '[TLS] Handshake completed — cipher: AES-256-GCM',
+  '[AUDIT] Email verified: user@gmail.com — 10:42:31',
+  '[GUARD] 2 failed OTP attempts — account flagged',
+  '[PAY] Invoice INV-2026-0043 generated — ₹5,898.82',
+  '[EMAIL] Verification sent → cod1@gmail.com — queued',
+  '[DB] Query executed in 2.4ms — users table',
+  '[ENV] Secrets loaded from vault — OK',
+];
+let secIdx = 0;
+const secEl = document.getElementById('security-console');
+function addSecLog() {
+  const l = secLogs[secIdx++ % secLogs.length];
+  const ts = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'console-line';
+  div.innerHTML = `<span class="console-prompt">[${ts}]</span><span>${l}</span>`;
+  secEl.appendChild(div);
+  if (secEl.children.length > 7) secEl.removeChild(secEl.firstChild);
+}
+setInterval(addSecLog, 1800);
+</script>
+</body>
+</html>
